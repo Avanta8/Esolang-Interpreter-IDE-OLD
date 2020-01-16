@@ -11,6 +11,8 @@ class CodeText(wx.stc.StyledTextCtrl):
     def init_settings(self):
         font = wx.Font(10, wx.DEFAULT, wx.NORMAL, wx.NORMAL, False, 'Source Code Pro')
         self.StyleSetFont(wx.stc.STC_STYLE_DEFAULT, font)
+        self.StyleSetBackground(wx.stc.STC_STYLE_INDENTGUIDE, wx.Colour(211, 211, 211))
+        self.StyleSetForeground(wx.stc.STC_STYLE_INDENTGUIDE, wx.Colour(211, 211, 211))
 
         self.SetLexer(wx.stc.STC_LEX_PYTHON)
         self.SetMarginType(1, wx.stc.STC_MARGIN_NUMBER)
@@ -37,7 +39,6 @@ class CodeText(wx.stc.StyledTextCtrl):
         self.Bind(wx.EVT_KEY_DOWN, self.key_pressed)
 
     def key_pressed(self, event):
-        # print(event, event.GetKeyCode())
         key_code = event.GetKeyCode()
 
         if key_code == wx.WXK_RETURN and not wx.GetKeyState(wx.WXK_SHIFT):
