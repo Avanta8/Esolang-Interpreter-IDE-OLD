@@ -1,6 +1,7 @@
 import wx
 import wx.aui
 
+import constants
 from code_text import CodeText
 
 
@@ -11,9 +12,11 @@ class EditorPage(wx.Panel):
 
         self.create_widgets()
 
+        # self.set_file_info(None, None, constants.FileTypes.none)
+        self.set_file_info(None, None, constants.FileTypes.brainfuck)
+
     def create_widgets(self):
 
-        # self.code_text = wx.TextCtrl(self)
         self.code_text = CodeText(self)
         self.visualiser = wx.Panel(self)
         self.code_runner = wx.Panel(self)
@@ -23,6 +26,19 @@ class EditorPage(wx.Panel):
         self.aui_manager.AddPane(self.visualiser, wx.TOP, 'Visualiser')
         self.aui_manager.AddPane(self.code_runner, wx.BOTTOM, 'Code Runner')
         self.aui_manager.Update()
+
+    def set_file_info(self, filename, filepath, filetype):
+        r"""
+        Arguments:
+            - `filename` -- name of file including extension. Eg. 'editor.py'
+            - `filepath` -- full file path. Eg. 'C:\Users\Harry\Documents\Programming\Python\esolang_interpreter\Esolang-Interpreter-IDE\editor.py'
+            - `filetype` -- constants.FileTypes
+        """
+        self.filename = filename
+        self.filepath = filepath
+        self.filetype = filetype
+
+        self.code_text.set_filetype(filetype)
 
 
 class EditorNotebook(wx.aui.AuiNotebook):
@@ -47,6 +63,6 @@ class EditorArea(wx.Panel):
     def create_widgets(self):
         self.editor_notebook = EditorNotebook(self)
         sizer = wx.BoxSizer()
-        sizer.Add(self.editor_notebook, 1, wx.ALL | wx.EXPAND, 5)
-        # sizer.Add(self.editor_notebook, 1, wx.EXPAND)
+        # sizer.Add(self.editor_notebook, 1, wx.ALL | wx.EXPAND, 5)
+        sizer.Add(self.editor_notebook, 1, wx.EXPAND)
         self.SetSizer(sizer)

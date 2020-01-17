@@ -29,10 +29,10 @@ class MainWindow(wx.Frame):
 
         menus = {
             'File': (
-                (wx.ID_NEW, 'New\tCtrl+N', 'New file', self.file_new),
-                (wx.ID_OPEN, 'Open\tCtrl+O', 'Open file', self.file_open),
-                (wx.ID_SAVE, 'Save\tCtrl+S', 'Save file', self.file_save),
-                (wx.ID_SAVEAS, 'Save as\tCtrl+Shift+S', 'Save as', self.file_saveas)
+                (wx.ID_NEW, 'New\tCtrl+N', 'Create a new file', self.file_new),
+                (wx.ID_OPEN, 'Open\tCtrl+O', 'Open an existing file', self.file_open),
+                (wx.ID_SAVE, 'Save\tCtrl+S', 'Save the current file', self.file_save),
+                (wx.ID_SAVEAS, 'Save as\tCtrl+Shift+S', 'Save as a new file', self.file_saveas)
             )
         }
 

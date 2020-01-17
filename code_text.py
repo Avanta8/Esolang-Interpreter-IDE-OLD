@@ -1,10 +1,15 @@
 import wx
 import wx.stc
 
+import constants
+import lexers
+
 
 class CodeText(wx.stc.StyledTextCtrl):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
+        self.syntax_styler = SyntaxStyler(self)
 
         self.init_settings()
 
@@ -14,10 +19,15 @@ class CodeText(wx.stc.StyledTextCtrl):
         self.StyleSetBackground(wx.stc.STC_STYLE_INDENTGUIDE, wx.Colour(211, 211, 211))
         self.StyleSetForeground(wx.stc.STC_STYLE_INDENTGUIDE, wx.Colour(211, 211, 211))
 
-        self.SetLexer(wx.stc.STC_LEX_PYTHON)
+        self.SetLexer(wx.stc.STC_LEX_CONTAINER)
+        self.Bind(wx.stc.EVT_STC_STYLENEEDED, self.syntax_styler.style_needed)
+
         self.SetMarginType(1, wx.stc.STC_MARGIN_NUMBER)
+        self.SetMarginWidth(1, 50)
 
         self.SetCaretLineVisible(True)
+        self.SetCaretLineBackground(wx.Colour(245, 245, 245))
+        # self.SetCaretLineBackAlpha(50)
         self.SetAdditionalSelectionTyping(True)
 
         self._set_default_indentation_settings()
@@ -37,7 +47,6 @@ class CodeText(wx.stc.StyledTextCtrl):
 
         self.CmdKeyClear(ord('U'), wx.stc.STC_SCMOD_CTRL)
         self.CmdKeyClear(ord('U'), wx.stc.STC_SCMOD_CTRL | wx.stc.STC_SCMOD_SHIFT)
-        # self.CmdKeyAssign(65, wx.stc.STC_SCMOD_NORM, lambda: print)
 
         self.Bind(wx.EVT_KEY_DOWN, self.key_pressed_event)
         self.Bind(wx.EVT_LEFT_DOWN, self.mouse_left_down_event)
@@ -85,3 +94,48 @@ class CodeText(wx.stc.StyledTextCtrl):
         indentation = self.GetLineIndentation(self.GetCurrentLine())
         self.NewLine()
         self.AddText(' ' * indentation)
+
+    def set_filetype(self, filetype):
+        self.syntax_styler.set_filetyle(filetype)
+
+
+class SyntaxStyler:
+
+    def __init__(self, textctrl):
+
+        self.filetype_to_stylefunc = {
+            constants.FileTypes.none: self.no_style,
+            constants.FileTypes.brainfuck: self.brainfuck_style,
+        }
+
+        self.textctrl = textctrl
+        self.filetype = constants.FileTypes.none
+        self.no_style()
+
+    def style_needed(self, event):
+        self._lexer.style_text(event)
+
+    def set_filetyle(self, filetype):
+        if filetype is self.filetype:
+            return
+
+        self.filetype = filetype
+
+        self.filetype_to_stylefunc[self.filetype]()
+
+    def no_style(self):
+        self._lexer = lexers.BaseLexer()
+
+    def brainfuck_style(self):
+        self._lexer = lexers.BrainfuckLexer()
+
+        foreground = (
+            (lexers.BrainfuckLexer.STYLE_PAREN, wx.Colour(255, 0, 0)),  # red
+            (lexers.BrainfuckLexer.STYLE_IO, wx.Colour(0, 0, 255)),  # blue
+            (lexers.BrainfuckLexer.STYLE_CELL, wx.Colour(0, 150, 0)),  # green
+            (lexers.BrainfuckLexer.STYLE_POINTER, wx.Colour(170, 0, 150)),  # purple
+            (lexers.BrainfuckLexer.STYLE_COMMENT, wx.Colour(120, 120, 120)),  # grey
+        )
+
+        for style, colour in foreground:
+            self.textctrl.StyleSetForeground(style, colour)
