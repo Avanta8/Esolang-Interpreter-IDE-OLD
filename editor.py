@@ -12,14 +12,13 @@ class EditorPage(wx.Panel):
     def __init__(self, *args, filename, filepath, filetype, text, **kwargs):
         super().__init__(*args, **kwargs)
 
-
         self.create_widgets()
 
         self.set_file_info(filename, filepath, filetype)
         if text:
             self.code_text.SetText(text)
 
-        self.Bind(wx.EVT_WINDOW_DESTROY, self.window_destroy_event)
+        self.Bind(wx.EVT_WINDOW_DESTROY, self.window_destroy_event, self)
 
     def create_widgets(self):
 
@@ -29,11 +28,19 @@ class EditorPage(wx.Panel):
 
         # self.aui_manager = wx.aui.AuiManager(self, wx.aui.AUI_MGR_DEFAULT | wx.aui.AUI_MGR_LIVE_RESIZE)
         self.aui_manager = wx.aui.AuiManager(self, wx.aui.AUI_MGR_ALLOW_FLOATING | wx.aui.AUI_MGR_TRANSPARENT_HINT
-                                             | wx.aui.AUI_MGR_LIVE_RESIZE | wx.aui.AUI_MGR_ALLOW_ACTIVE_PANE)
+                                             | wx.aui.AUI_MGR_LIVE_RESIZE)
+        # self.aui_manager = wx.lib.agw.aui.AuiManager(self, wx.aui.AUI_MGR_ALLOW_FLOATING | wx.aui.AUI_MGR_TRANSPARENT_HINT
+        #                                              | wx.aui.AUI_MGR_LIVE_RESIZE)
         self.aui_manager.AddPane(self.code_text, wx.CENTRE, 'Code Text')
         self.aui_manager.AddPane(self.visualiser, wx.TOP, 'Visualiser')
         self.aui_manager.AddPane(self.code_runner, wx.BOTTOM, 'Code Runner')
         self.aui_manager.Update()
+
+        # sizer = wx.BoxSizer(wx.VERTICAL)
+        # sizer.Add(self.visualiser, 1, wx.EXPAND)
+        # sizer.Add(self.code_text, 1, wx.EXPAND)
+        # sizer.Add(self.code_runner, 1, wx.EXPAND)
+        # self.SetSizer(sizer)
 
     def set_file_info(self, filename, filepath, filetype):
         r"""
@@ -47,6 +54,7 @@ class EditorPage(wx.Panel):
         self.filetype = filetype
 
         self.code_text.set_filetype(filetype)
+        self.visualiser.set_filetype(filetype)
 
     def get_file_info(self):
         return self.filename, self.filepath, self.filetype
@@ -69,7 +77,7 @@ class EditorNotebook(wx.lib.agw.aui.AuiNotebook):
     def __init__(self, *args, agwStyle=wx.lib.agw.aui.aui_constants.AUI_NB_TOP
                  | wx.lib.agw.aui.aui_constants.AUI_NB_TAB_SPLIT
                  | wx.lib.agw.aui.aui_constants.AUI_NB_TAB_MOVE
-                #  | wx.lib.agw.aui.aui_constants.AUI_NB_TAB_FIXED_WIDTH
+                 #  | wx.lib.agw.aui.aui_constants.AUI_NB_TAB_FIXED_WIDTH
                  | wx.lib.agw.aui.aui_constants.AUI_NB_CLOSE_ON_ALL_TABS
                  | wx.lib.agw.aui.aui_constants.AUI_NB_SCROLL_BUTTONS
                  | wx.lib.agw.aui.aui_constants.AUI_NB_WINDOWLIST_BUTTON

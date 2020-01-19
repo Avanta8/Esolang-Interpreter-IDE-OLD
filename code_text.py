@@ -123,6 +123,9 @@ class SyntaxStyler:
 
         self.filetype_to_stylefunc[self.filetype]()
 
+        # self.textctrl.Colourise(0, 100)
+        # self.textctrl.SetLexer(wx.stc.STC_LEX_CONTAINER)
+
     def no_style(self):
         self._lexer = lexers.BaseLexer()
 
