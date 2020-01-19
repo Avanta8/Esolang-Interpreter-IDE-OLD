@@ -77,7 +77,7 @@ class CodeText(wx.stc.StyledTextCtrl):
         modifiers = event.GetModifiers()
 
         if event.LeftIsDown():
-            print('ctrl + mouse drag')
+            print('Mouse drag')
             selection = self.GetMainSelection()
             pos = self.PositionFromPoint(event.GetPosition())
             anchor = self.GetSelectionNAnchor(selection)

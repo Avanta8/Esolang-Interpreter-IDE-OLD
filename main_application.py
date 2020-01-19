@@ -6,12 +6,17 @@ import constants
 from editor import EditorNotebook
 
 
+import wx.lib.inspection
+
+
+
 class App(wx.App):
 
     def OnInit(self):
         main_window = MainWindow(None, title='Esolang IDE')
         main_window.Show()
-        self.SetTopWindow(main_window)
+        # self.SetTopWindow(main_window)
+        wx.lib.inspection.InspectionTool().Show()
         return True
 
 
@@ -40,8 +45,12 @@ class MainWindow(wx.Frame):
                 (wx.ID_NEW, 'New\tCtrl+N', 'Create a new file', self.file_new),
                 (wx.ID_OPEN, 'Open\tCtrl+O', 'Open an existing file', self.file_open),
                 (wx.ID_SAVE, 'Save\tCtrl+S', 'Save the current file', self.file_save),
-                (wx.ID_SAVEAS, 'Save as\tCtrl+Shift+S', 'Save as a new file', self.file_saveas)
-            )
+                (wx.ID_SAVEAS, 'Save as\tCtrl+Shift+S', 'Save as a new file', self.file_saveas),
+            ),
+            'Run': (
+                (wx.ID_ANY, 'Run code\tCtrl+B', 'Execute code', self.run_code),
+                (wx.ID_ANY, 'Open visualiser\tCtrl+Shift+B', 'Open Visualiser', self.open_visualiser),
+            ),
         }
 
         for title, items in menus.items():
@@ -126,6 +135,12 @@ class MainWindow(wx.Frame):
         filetype = constants.FileTypes.brainfuck if extension == '.b' else constants.FileTypes.none
         filename = os.path.basename(filepath)
         return filename, filepath, filetype
+
+    def run_code(self, event):
+        pass
+
+    def open_visualiser(self, event):
+        self.editor_notebook.open_visualiser()
 
 
 def main():
