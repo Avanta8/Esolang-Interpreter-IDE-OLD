@@ -74,7 +74,7 @@ class CodeText(wx.stc.StyledTextCtrl):
             self.SetSelection(pos, pos)
 
     def mouse_move_event(self, event):
-        modifiers = event.GetModifiers()
+        # modifiers = event.GetModifiers()
 
         if event.LeftIsDown():
             print('Mouse drag')

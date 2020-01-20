@@ -9,7 +9,6 @@ from editor import EditorNotebook
 import wx.lib.inspection
 
 
-
 class App(wx.App):
 
     def OnInit(self):
@@ -95,7 +94,7 @@ class MainWindow(wx.Frame):
         text = self.editor_notebook.get_current_text()
         if current_file_info is None:
             return
-        
+
         _, filepath, _ = current_file_info
         if filepath is None:
             self.file_saveas()

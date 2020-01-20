@@ -1,17 +1,21 @@
 import wx
+import wx.grid
 import wx.stc
 import wx.lib.splitter
-
 
 import constants
 
 
 class CommandsPanel(wx.Panel):
-    def __init__(self, *args, **kw):
-        super().__init__(*args, **kw)
+    def __init__(self, parent, *args, **kw):
+        super().__init__(parent, *args, **kw)
+
+        self.main_visualiser = parent
 
         self.create_widgets()
         self.create_binds()
+
+        self.pressed_stop(None)
 
     def create_widgets(self):
         # self.SetBackgroundColour('red')
@@ -36,31 +40,14 @@ class CommandsPanel(wx.Panel):
         self.pause_button = wx.Button(self, label='Pause')
         self.back_button = wx.Button(self, label='Back')
         self.stop_button = wx.Button(self, label='Stop')
-        self.buttons = [self.run_button, self.step_button,
+        self.buttons = {self.run_button, self.step_button,
                         self.pause_button, self.back_button,
-                        self.stop_button, self.continue_button]
+                        self.stop_button, self.continue_button}
 
         for button in self.buttons:
             button.Hide()
 
         self.buttons_sizer = wx.GridSizer(2, 2, 5)
-        self.buttons_sizer.AddMany(((self.run_button, 0, wx.EXPAND),
-                                    (self.continue_button, 0, wx.EXPAND),
-                                    (self.step_button, 0, wx.EXPAND),
-                                    (self.pause_button, 0, wx.EXPAND)))
-
-        self.run_button.Show()
-        self.continue_button.Show()
-        self.step_button.Show()
-        self.pause_button.Show()
-
-        # self.buttons_sizer = wx.GridBagSizer(5, 5)
-        # self.buttons_sizer.AddMany((
-        #     (self.run_button, (0, 0), (1, 1), wx.EXPAND),
-        #     (self.continue_button, (0, 1), (1, 1), wx.EXPAND),
-        #     (self.step_button, (1, 0), (1, 1), wx.EXPAND),
-        #     (self.pause_button, (1, 1), (1, 1), wx.EXPAND)
-        # ))
 
         sizer = wx.StaticBoxSizer(wx.VERTICAL, self, 'Commands:')
         sizer.Add(self.buttons_sizer, 0, wx.EXPAND)
@@ -106,7 +93,67 @@ class CommandsPanel(wx.Panel):
         return jump_sizer
 
     def create_binds(self):
+        self.Bind(wx.EVT_BUTTON, self.pressed_run, self.run_button)
+        self.Bind(wx.EVT_BUTTON, self.pressed_step, self.step_button)
+        self.Bind(wx.EVT_BUTTON, self.pressed_stop, self.stop_button)
+        self.Bind(wx.EVT_BUTTON, self.pressed_pause, self.pause_button)
+        self.Bind(wx.EVT_BUTTON, self.pressed_back, self.back_button)
+
+    def pressed_run(self, event):
+        self._add_buttons(
+            self.stop_button,
+            self.pause_button,
+        )
+
+    def pressed_step(self, event):
+        self._add_buttons(
+            self.stop_button,
+            self.step_button,
+            self.back_button,
+            self.continue_button
+        )
+        self.main_visualiser.command_step()
+
+    def pressed_stop(self, event):
+        self._add_buttons(
+            self.run_button,
+            self.step_button
+        )
+
+    def pressed_pause(self, event):
+        self._add_buttons(
+            self.stop_button,
+            self.step_button,
+            self.back_button,
+            self.continue_button
+        )
+
+    def pressed_back(self, event):
+        self._add_buttons(
+            self.stop_button,
+            self.step_button,
+            self.back_button,
+            self.continue_button
+        )
+
+    def pressed_forwards(self, event):
         pass
+
+    def pressed_backwards(self, event):
+        pass
+
+    def _add_buttons(self, a=None, b=None, c=None, d=None):
+        self.buttons_sizer.Clear()
+        for button in self.buttons:
+            button.Hide()
+
+        for window in a, b, c, d:
+            if window is not None:
+                window.Show()
+                self.buttons_sizer.Add(window, 0, wx.EXPAND)
+            else:
+                self.buttons_sizer.AddSpacer(0)
+        self.buttons_sizer.RecalcSizes()
 
 
 class IOPanel(wx.Panel):
@@ -116,7 +163,7 @@ class IOPanel(wx.Panel):
         self.create_widgets()
 
     def create_widgets(self):
-        self.SetBackgroundColour('blue')
+        # self.SetBackgroundColour('blue')
 
         # self.input_text = wx.stc.StyledTextCtrl(self)
         self.input_text = wx.TextCtrl(self, style=wx.TE_PROCESS_TAB | wx.TE_MULTILINE | wx.HSCROLL)
@@ -138,18 +185,36 @@ class VisualiserPanel(wx.Panel):
 
         self.create_widgets()
 
+    def step(self):
+        raise NotImplementedError
+
     def create_widgets(self):
         raise NotImplementedError
 
 
 class NoVisualiserPanel(VisualiserPanel):
+
     def create_widgets(self):
-        self.SetBackgroundColour('Black')
+        self.SetBackgroundColour('Yellow')
 
 
 class BrainfuckVisualiserPanel(VisualiserPanel):
+
     def create_widgets(self):
-        self.SetBackgroundColour('Green')
+        # self.SetBackgroundColour('Green')
+        self.cells_grid = wx.grid.Grid(self)
+        self.cells_grid.CreateGrid(10, 10)
+        self.cells_grid.DisableDragRowSize()
+        self.Bind(wx.EVT_SIZE, self.resize_event)
+
+        sizer = wx.BoxSizer()
+        sizer.Add(self.cells_grid, 1, wx.EXPAND | wx.ALL)
+        self.SetSizer(sizer)
+
+    def resize_event(self, event):
+        print(event)
+        self.cells_grid.AutoSizeColumns()
+        event.Skip()
 
 
 class Visualiser(wx.lib.splitter.MultiSplitterWindow):
@@ -181,9 +246,9 @@ class Visualiser(wx.lib.splitter.MultiSplitterWindow):
             return
 
         old_visualiser = self.visualiser_panel
-
         self.visualiser_panel = visualiser_type(self)
-
         self.ReplaceWindow(old_visualiser, self.visualiser_panel)
-
         old_visualiser.Destroy()
+
+    def command_step(self):
+        self.visualiser_panel.step()
